@@ -109,16 +109,37 @@ the scope is now declared rather than assumed:
 
 ## Install
 
+Pick the line that matches the machine.
+
+**A released tarball — no registry, no git.** This is the one that works
+everywhere:
+
+```sh
+dsh plugin --profile web add \
+  https://github.com/lion231226/dsh-verified-progress/releases/latest/download/dsh-verified-progress.tgz
+```
+
+**From the registry**, once the package is published there:
+
 ```sh
 dsh plugin --profile web add dsh-verified-progress
 ```
 
-Or install a released tarball, which needs no registry:
+**From the repository** — only if `git` is installed:
 
 ```sh
-dsh plugin --profile web add \
-  https://github.com/lion231226/dsh-verified-progress/releases/download/v0.3.1/dsh-verified-progress.tgz
+dsh plugin --profile web add github:lion231226/dsh-verified-progress
 ```
+
+> **A repository address needs `git` on the machine, and the failure is not
+> obvious.** pnpm resolves a git dependency with `git ls-remote`, so on a host
+> without git the install dies with
+> `Command failed with exit code 1: git ls-remote "…" HEAD "HEAD^{}"` followed by
+> the shell's own "not recognized as an internal or external command" message in
+> the local codepage — which reads like a broken plugin rather than a missing
+> tool. The tarball form above downloads over HTTPS and needs nothing installed,
+> so it is the safe default. (Installing git also fixes it; nothing about the
+> plugin is at fault.)
 
 Then restart the harness: a plugin that failed to activate is not retried, and
 the module cache holds the previous version until the process restarts. No build

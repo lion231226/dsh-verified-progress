@@ -67,16 +67,29 @@ verified_progress_verify  claim="解析器能处理 CRLF 输入"
 
 ## 安装
 
+按那台机器的实际情况选一条。
+
+**已发布的 tarball —— 不需要 registry，也不需要 git。** 这条在哪都能用：
+
+```sh
+dsh plugin --profile web add \
+  https://github.com/lion231226/dsh-verified-progress/releases/latest/download/dsh-verified-progress.tgz
+```
+
+**从 registry 装**（该包在 npm 上发布之后）：
+
 ```sh
 dsh plugin --profile web add dsh-verified-progress
 ```
 
-或直接装已发布的 tarball（不需要 registry）：
+**从仓库地址装**——**仅当机器上装了 `git`**：
 
 ```sh
-dsh plugin --profile web add \
-  https://github.com/lion231226/dsh-verified-progress/releases/download/v0.3.1/dsh-verified-progress.tgz
+dsh plugin --profile web add github:lion231226/dsh-verified-progress
 ```
+
+> **仓库地址需要机器上有 `git`，而且失败信息很不指向根因。** pnpm 解析 git 依赖时会执行 `git ls-remote`，所以在没装 git 的机器上安装会以
+> `Command failed with exit code 1: git ls-remote "…" HEAD "HEAD^{}"` 失败，后面跟着 shell 用本机代码页输出的「不是内部或外部命令」——看起来像插件坏了，实际是缺一个工具。上面的 tarball 形式走 HTTPS 下载，什么都不用装，所以它是安全的默认选择。（装上 git 同样能解决；这件事与插件本身无关。）
 
 然后重启 harness：激活失败的插件不会被重试，且模块缓存会一直持有旧版本直到进程重启。无需构建：包内直接是 ESM 源码，且没有运行时依赖。
 
