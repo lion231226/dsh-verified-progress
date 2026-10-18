@@ -11,18 +11,19 @@
  */
 
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 
 import { registerTools, extractSection, extractSectionText } from "../lib/tools.js";
 import { readLedger } from "../lib/core/ledger.js";
+import { scratchRoot } from "./scratch.mjs";
 
-const SCRATCH_ROOT = path.join(process.cwd(), ".tmp");
-
+/** Isolated fixture workspace, created under whichever root is writable. */
 async function scratch(t) {
-  await mkdir(SCRATCH_ROOT, { recursive: true });
-  const dir = await mkdtemp(path.join(SCRATCH_ROOT, "lh-integration-"));
+  const { root } = await scratchRoot();
+  const { mkdtemp, rm } = await import("node:fs/promises");
+  const dir = await mkdtemp(path.join(root, "lh-integration-"));
   t.after(() => rm(dir, { recursive: true, force: true }));
   return dir;
 }

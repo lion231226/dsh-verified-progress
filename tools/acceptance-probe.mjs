@@ -121,23 +121,34 @@ async function packArtifact(outDir) {
 }
 
 /**
- * Give the staged package the peer dependencies it resolves at install time.
+ * Peers resolve by walking up from the staged package.
  *
- * The artifact ships no node_modules on purpose; resolution has to start from
- * somewhere, so link the repository's own. The link lives **beside** the package
- * rather than inside it, so cleaning up between runs never has to remove a
- * directory that contains a junction.
+ * The artifact ships no node_modules on purpose — its hosts are peer
+ * dependencies — so the staged package has to sit somewhere that Node can find
+ * them from. It sits at `<out>/pack/package`, and `<out>` defaults to the
+ * repository's own `verify/`, so the lookup walks up into the repository's
+ * `node_modules` on its own. No link is created: a previous version made one,
+ * and it was both unnecessary and fragile (creating a junction needs a
+ * privilege that sandboxed runners do not always grant).
+ *
+ * A custom `--out` outside the repository therefore needs its own node_modules
+ * somewhere above it; the failure is reported plainly instead of being papered
+ * over.
  */
-async function linkPeers(packDir) {
-  const linkTarget = path.join(REPO, "node_modules");
-  const linkPath = path.join(packDir, "node_modules");
-  unlinkDir(linkPath);
-  const link = spawnSync(
-    process.platform === "win32" ? "cmd" : "ln",
-    process.platform === "win32" ? ["/c", "mklink", "/J", linkPath, linkTarget] : ["-s", linkTarget, linkPath],
-    { encoding: "utf8" },
-  );
-  if (link.status !== 0) throw new Error(`could not link node_modules for the probe: ${link.stderr}`);
+async function assertPeersResolvable(outDir) {
+  const from = path.join(outDir, "pack", "package", "lib", "tools.js");
+  try {
+    // Resolve without importing: the specifier is what fails, not the modules.
+    const { createRequire } = await import("node:module");
+    const requireFrom = createRequire(pathToFileURL(from));
+    requireFrom.resolve("@deepseek-ai/dsh-tools");
+  } catch (error) {
+    throw new Error(
+      `peer dependencies are not resolvable from ${from} (${error.code ?? error.message}). ` +
+        "Run the probe with its default --out inside the repository, or make @deepseek-ai/* " +
+        "packages reachable from the output directory.",
+    );
+  }
 }
 
 /**
@@ -220,7 +231,7 @@ async function main() {
     artifact = { dir: path.resolve(ARTIFACT), source: "explicit:--artifact", included: [] };
   } else {
     artifact = await packArtifact(OUT_DIR);
-    await linkPeers(path.join(OUT_DIR, "pack"));
+    await assertPeersResolvable(OUT_DIR);
   }
 
   const toolsModule = await loadTools(artifact.dir);

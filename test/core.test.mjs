@@ -28,18 +28,13 @@ import {
   deriveRunId,
 } from "../lib/core/ledger.js";
 
-// Scratch space lives inside the repository rather than os.tmpdir(): the
-// harness may run with a sandbox that does not grant write access to the
-// platform temp directory, and a test that cannot create its own fixture is
-// indistinguishable from a test whose subject is broken.
-const SCRATCH_ROOT = path.join(process.cwd(), ".tmp");
+// Scratch space is resolved at run time from test/scratch.mjs: an explicit
+// LH_SCRATCH_ROOT wins, then the repository's .tmp, then the platform temp
+// directory. A sandbox can deny any one of them, and a test that cannot create
+// its own fixture is indistinguishable from a test whose subject is broken.
+import { tempDir } from "./scratch.mjs";
 
-async function tempDir(t) {
-  await mkdir(SCRATCH_ROOT, { recursive: true });
-  const dir = await mkdtemp(path.join(SCRATCH_ROOT, "lh-test-"));
-  t.after(() => rm(dir, { recursive: true, force: true }));
-  return dir;
-}
+export { tempDir };
 
 // ---------------------------------------------------------------- verdict ---
 
