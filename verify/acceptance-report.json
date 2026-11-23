@@ -1,15 +1,15 @@
 {
   "probe": "dsh-verified-progress acceptance",
-  "ranAt": "2026-10-09T13:53:59.040Z",
-  "node": "v24.21.0",
+  "ranAt": "2026-11-23T16:33:34.723Z",
+  "node": "v24.12.0",
   "platform": "win32 x64",
   "artifact": {
-    "source": "packed:dsh-verified-progress-0.3.0.tgz",
+    "source": "packed:dsh-verified-progress-0.3.2.tgz",
     "dir": "verify\\pack\\package"
   },
   "selfProof": {
     "artifact_loaded": true,
-    "artifact_source": "packed:dsh-verified-progress-0.3.0.tgz",
+    "artifact_source": "packed:dsh-verified-progress-0.3.2.tgz",
     "artifact_files": [
       "lib/**",
       "cordis.patch.yml",
@@ -63,7 +63,7 @@
         "changed_paths": [
           "app.js"
         ],
-        "scope": "C:\\Users\\81521\\.dsh\\projects\\dsh-verified-progress\\verify\\scratch-RBzOSS\\s4-ws-KfFzlQ\\src"
+        "scope": "D:\\MyProject\\研究学习\\DSH插件\\dsh-verified-progress\\verify\\scratch-qyzOu3\\s4-ws-aqLRKZ\\src"
       }
     },
     {
